@@ -19,11 +19,15 @@ var GetAllQuestionsQuery = `SELECT
 							FROM questions`
 
 var GetAnswersByQuestionIdQuery = `SELECT
-							id, body,
+							answers.id as id, body,
 							user_id, question_id,
-							created_at, updated_at,
-							up_votes, down_votes
-							FROM answers WHERE question_id = ?`
+							answers.created_at as created_at, answers.updated_at as updated_at,
+							up_votes, down_votes,
+							answers.status as status,
+							users.id AS user_id,
+							users.username as username,
+							users.email AS email
+							FROM answers INNER JOIN users ON users.id = answers.user_id WHERE question_id = ?`
 
 var GetAnswerByIdQuery = `SELECT
 							id, body,

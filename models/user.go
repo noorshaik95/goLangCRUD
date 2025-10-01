@@ -12,8 +12,8 @@ type User struct {
 	Username  string `json:"username"`
 	Email     string `json:"email" binding:"required,email"`
 	Password  string `json:"password" binding:"required"`
-	CreatedAt int64  `json:"created_at"`
-	UpdatedAt int64  `json:"updated_at"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
 }
 
 func (u User) Save() error {
