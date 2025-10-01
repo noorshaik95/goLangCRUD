@@ -2,6 +2,7 @@ package config
 
 import (
 	"database/sql"
+	"goLandCRUD/logger"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -18,8 +19,10 @@ func InitDB() {
 
 	DB.SetMaxOpenConns(10)
 	DB.SetMaxIdleConns(5)
+	logger.Info("Database connected successfully")
 
 	createTables()
+	logger.Info("Tables created successfully")
 }
 
 func createTables() {

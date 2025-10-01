@@ -3,13 +3,13 @@ package utils
 var GetQuestionsByUserQuery = `SELECT
 							id, title, body,
 							user_id, created_at,
-							updated_at, up_votes, down_votes
+							updated_at, up_votes, down_votes, status
 							FROM questions WHERE user_id = ?`
 
 var GetQuestionByIdQuery = `SELECT
 							id, title, body,
 							user_id, created_at,
-							updated_at, up_votes, down_votes
+							updated_at, up_votes, down_votes, status
 							FROM questions WHERE id = ?`
 
 var GetAllQuestionsQuery = `SELECT
@@ -39,9 +39,7 @@ var GetUserByIdQuery = `SELECT
 						FROM users WHERE id = ?`
 
 var GetUserByEmailQuery = `SELECT
-						id, username,
-						email, password,
-						created_at, updated_at
+						id, password
 						FROM users WHERE email = ?`
 
 var GetVotesByAnswerIdQuery = `SELECT
@@ -59,8 +57,8 @@ var GetVotesByQuestionIdQuery = `SELECT
 							FROM votes WHERE question_id = ?`
 
 var InsertUserQuery = `INSERT INTO users
-						(username, email, password, created_at, updated_at)
-						VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
+						(username, email, password)
+						VALUES (?, ?, ?)`
 
 var InsertQuestionQuery = `INSERT INTO questions
 							(title, body, user_id)

@@ -1,8 +1,9 @@
 package routes
 
 import (
-	"goLandCRUD/models"
-	"strconv"
+	"goLandCRUD/logger"
+	"goLandCRUD/middlewares"
+	"goLandCRUD/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,20 +14,10 @@ func RegisterRoutes(g *gin.Engine) {
 			"message": "Welcome to the API",
 		})
 	})
-	g.GET("/questions/user/:userId", func(c *gin.Context) {
-		userId, err := strconv.ParseInt(c.Param("userId"), 10, 64)
-		if err != nil {
-			c.JSON(400, gin.H{"error": "Invalid userId"})
-			return
-		}
-		var questions []models.Question
-		questions, err = models.GetUserQuestionsList(userId)
-		if err != nil {
-			c.JSON(500, gin.H{"error": "Failed to retrieve questions"})
-			return
-		}
-		c.JSON(200, gin.H{
-			"questions": questions,
-		})
-	})
+	g.POST("/register", services.RegisterUser)
+	g.POST("/login", services.LoginUser)
+	authenticated := g.Group("/").Use(middlewares.Authenticate)
+	authenticated.GET("/questions/user/:userId", services.GetQuestionByUserId)
+	authenticated.POST("/question", services.CreateQuestion)
+	logger.Info("Routes created successfully")
 }
