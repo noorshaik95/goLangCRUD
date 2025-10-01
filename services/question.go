@@ -3,6 +3,7 @@ package services
 import (
 	"goLandCRUD/logger"
 	"goLandCRUD/models"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,7 +23,24 @@ func GetQuestionByUserId(c *gin.Context) {
 }
 
 func GetQuestionById(c *gin.Context) {
-
+	var question models.QuestionWithUser
+	questionId := c.Param("questionId")
+	var err error
+	question.Question.ID, err = strconv.ParseInt(questionId, 10, 64)
+	if err != nil {
+		logger.Error("Error Parsing the questionId from Context", err)
+		c.JSON(400, gin.H{"error": "Invalid questionId"})
+		return
+	}
+	err = question.GetQuestionDetails()
+	if err != nil {
+		logger.Error("Error fetching the question details", err)
+		c.JSON(500, gin.H{"error": "Failed to retrieve question details"})
+		return
+	}
+	c.JSON(200, gin.H{
+		"question": question,
+	})
 }
 
 func CreateQuestion(c *gin.Context) {

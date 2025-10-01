@@ -20,10 +20,10 @@ type Answer struct {
 
 type AnswerWithUser struct {
 	Answer
-	Question      Question `json:"question"`
-	User          User     `json:"user"`
-	UpVotesList   []Vote   `json:"up_votes_list"`
-	DownVotesList []Vote   `json:"down_votes_list"`
+	//Question      Question `json:"question"`
+	User          User   `json:"user"`
+	UpVotesList   []Vote `json:"up_votes_list"`
+	DownVotesList []Vote `json:"down_votes_list"`
 }
 
 func (answer *Answer) Save() error {
@@ -43,6 +43,11 @@ func (answer *Answer) Save() error {
 		return err
 	}
 	// Update the answer count in the questions table
+	// in a separate goroutine to avoid blocking
+	// the main execution flow
+	// TODO: Handle error properly (e.g., logging)
+	// Consider using a worker pool or job queue for better scalability
+	// in a real-world application
 	go func() {
 		err := UpdateQuestionAnswerCount(answer.QuestionID)
 		if err != nil {
