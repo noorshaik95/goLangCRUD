@@ -44,6 +44,8 @@ func GetUserQuestionsList(userId int64) ([]QuestionWithUser, error) {
 	}
 	defer closeQuery(rows)
 	var questions []QuestionWithUser
+	var answersChan = make(chan *QuestionWithUser)
+	index := 0
 	for rows.Next() {
 		var question QuestionWithUser
 		err := rows.Scan(&question.Question.ID,
@@ -51,12 +53,21 @@ func GetUserQuestionsList(userId int64) ([]QuestionWithUser, error) {
 		if err != nil {
 			return nil, err
 		}
-		answers, err := GetAllAnswersByQuestionId(question.Question.ID)
-		if err != nil {
-			answers = nil
+		index++
+		go func(question *QuestionWithUser) {
+			answers, err := GetAllAnswersByQuestionId(question.Question.ID)
+			if err != nil {
+				answers = nil
+			}
+			question.AnswerWithUser = answers
+			answersChan <- question
+		}(&question)
+	}
+	for answers := range answersChan {
+		questions = append(questions, *answers)
+		if index == len(questions) {
+			close(answersChan)
 		}
-		question.AnswerWithUser = answers
-		questions = append(questions, question)
 	}
 	return questions, nil
 }
