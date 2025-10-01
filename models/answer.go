@@ -2,6 +2,7 @@ package models
 
 import (
 	"goLandCRUD/config"
+	"goLandCRUD/logger"
 	"goLandCRUD/utils"
 )
 
@@ -19,9 +20,10 @@ type Answer struct {
 
 type AnswerWithUser struct {
 	Answer
-	User          User   `json:"user"`
-	UpVotesList   []Vote `json:"up_votes_list"`
-	DownVotesList []Vote `json:"down_votes_list"`
+	Question      Question `json:"question"`
+	User          User     `json:"user"`
+	UpVotesList   []Vote   `json:"up_votes_list"`
+	DownVotesList []Vote   `json:"down_votes_list"`
 }
 
 func (answer *Answer) Save() error {
@@ -38,8 +40,16 @@ func (answer *Answer) Save() error {
 	}
 	answerId, err := result.LastInsertId()
 	if err != nil {
-
+		return err
 	}
+	// Update the answer count in the questions table
+	go func() {
+		err := UpdateQuestionAnswerCount(answer.QuestionID)
+		if err != nil {
+			logger.Error("Failed to update answer count for question ID: ", answer.QuestionID, "\nError: ", err)
+			return
+		}
+	}()
 	answer.ID = answerId
 	return nil
 }

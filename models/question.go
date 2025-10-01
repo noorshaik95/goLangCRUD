@@ -6,22 +6,24 @@ import (
 )
 
 type Question struct {
-	ID        int64  `json:"id"`
-	Title     string `json:"title"`
-	Body      string `json:"body"`
-	UserID    int64  `json:"user_id"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
-	UpVotes   int64  `json:"up_votes"`
-	DownVotes int64  `json:"down_votes"`
-	Status    string `json:"status"`
+	ID          int64  `json:"id"`
+	Title       string `json:"title"`
+	Body        string `json:"body"`
+	UserID      int64  `json:"user_id"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
+	UpVotes     int64  `json:"up_votes"`
+	DownVotes   int64  `json:"down_votes"`
+	Status      string `json:"status"`
+	AnswerCount int64  `json:"answer_count"`
 }
 
 type QuestionWithUser struct {
-	Question      Question `json:"question"`
-	User          User     `json:"user"`
-	UpVotesList   []Vote   `json:"up_votes_list"`
-	DownVotesList []Vote   `json:"down_votes_list"`
+	Question       Question         `json:"question"`
+	User           User             `json:"user"`
+	AnswerWithUser []AnswerWithUser `json:"answers"`
+	UpVotesList    []Vote           `json:"up_votes_list"`
+	DownVotesList  []Vote           `json:"down_votes_list"`
 }
 
 type Closeable interface {
@@ -34,20 +36,26 @@ func closeQuery(query Closeable) {
 		panic(err)
 	}
 }
-func GetUserQuestionsList(userId int64) ([]Question, error) {
+func GetUserQuestionsList(userId int64) ([]QuestionWithUser, error) {
 	query := utils.GetQuestionsByUserQuery
 	rows, err := config.DB.Query(query, userId)
 	if err != nil {
 		return nil, err
 	}
 	defer closeQuery(rows)
-	var questions []Question
+	var questions []QuestionWithUser
 	for rows.Next() {
-		var question Question
-		err := rows.Scan(&question.ID, &question.Title, &question.Body, &question.UserID, &question.CreatedAt, &question.UpdatedAt, &question.UpVotes, &question.DownVotes, &question.Status)
+		var question QuestionWithUser
+		err := rows.Scan(&question.Question.ID,
+			&question.Question.Title, &question.Question.Body, &question.Question.UserID, &question.Question.CreatedAt, &question.Question.UpdatedAt, &question.Question.UpVotes, &question.Question.DownVotes, &question.Question.Status, &question.Question.AnswerCount)
 		if err != nil {
 			return nil, err
 		}
+		answers, err := GetAllAnswersByQuestionId(question.Question.ID)
+		if err != nil {
+			answers = nil
+		}
+		question.AnswerWithUser = answers
 		questions = append(questions, question)
 	}
 	return questions, nil
@@ -55,12 +63,25 @@ func GetUserQuestionsList(userId int64) ([]Question, error) {
 func (question *Question) GetQuestionById() error {
 	query := utils.GetQuestionByIdQuery
 	row := config.DB.QueryRow(query, question.ID)
-	err := row.Scan(&question.ID, &question.Title, &question.Body, &question.UserID, &question.CreatedAt, &question.UpdatedAt, &question.UpVotes, &question.DownVotes, &question.Status)
+	err := row.Scan(&question.ID, &question.Title, &question.Body, &question.UserID, &question.CreatedAt, &question.UpdatedAt, &question.UpVotes, &question.DownVotes, &question.Status, &question.AnswerCount)
 	if err != nil {
 		return err
 	}
 	return nil
 }
+
+func (question *QuestionWithUser) GetQuestionDetails() error {
+	err := question.Question.GetQuestionById()
+	if err != nil {
+		return err
+	}
+	question.AnswerWithUser, err = GetAllAnswersByQuestionId(question.Question.ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (question *Question) CreateQuestion() error {
 	query := utils.InsertQuestionQuery
 	result, err := config.DB.Exec(query, question.Title, question.Body, question.UserID)
@@ -73,4 +94,10 @@ func (question *Question) CreateQuestion() error {
 		return err
 	}
 	return nil
+}
+
+func UpdateQuestionAnswerCount(questionId int64) error {
+	query := utils.UpdateQuestionIncrementAnswerCountQuery
+	_, err := config.DB.Exec(query, questionId)
+	return err
 }

@@ -3,20 +3,14 @@ package services
 import (
 	"goLandCRUD/logger"
 	"goLandCRUD/models"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
 func GetQuestionByUserId(c *gin.Context) {
-	userId, err := strconv.ParseInt(c.Param("userId"), 10, 64)
-	if err != nil {
-		logger.Error("Error Parsing the userId from Context", err)
-		c.JSON(400, gin.H{"error": "Invalid userId"})
-		return
-	}
-	var questions []models.Question
-	questions, err = models.GetUserQuestionsList(userId)
+	userId := c.GetInt64("userId")
+	var questions []models.QuestionWithUser
+	questions, err := models.GetUserQuestionsList(userId)
 	if err != nil {
 		logger.Error("Error fetching the list of questions", err)
 		c.JSON(500, gin.H{"error": "Failed to retrieve questions"})
@@ -25,6 +19,10 @@ func GetQuestionByUserId(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"questions": questions,
 	})
+}
+
+func GetQuestionById(c *gin.Context) {
+
 }
 
 func CreateQuestion(c *gin.Context) {

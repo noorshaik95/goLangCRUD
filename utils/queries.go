@@ -3,13 +3,13 @@ package utils
 var GetQuestionsByUserQuery = `SELECT
 							id, title, body,
 							user_id, created_at,
-							updated_at, up_votes, down_votes, status
+							updated_at, up_votes, down_votes, status, answer_count
 							FROM questions WHERE user_id = ?`
 
 var GetQuestionByIdQuery = `SELECT
 							id, title, body,
 							user_id, created_at,
-							updated_at, up_votes, down_votes, status
+							updated_at, up_votes, down_votes, status, answer_count
 							FROM questions WHERE id = ?`
 
 var GetAllQuestionsQuery = `SELECT
@@ -99,6 +99,9 @@ var UpdateUserQuery = `UPDATE users
 
 var UpdateQuestionQuery = `UPDATE questions
 							SET title = ?, body = ?, updated_at = CURRENT_TIMESTAMP
+							WHERE id = ?`
+var UpdateQuestionIncrementAnswerCountQuery = `UPDATE questions
+							SET answer_count = answer_count + 1, updated_at = CURRENT_TIMESTAMP
 							WHERE id = ?`
 
 var UpdateAnswerQuery = `UPDATE answers

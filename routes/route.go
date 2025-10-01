@@ -17,7 +17,7 @@ func RegisterRoutes(g *gin.Engine) {
 	g.POST("/register", services.RegisterUser)
 	g.POST("/login", services.LoginUser)
 	authenticated := g.Group("/").Use(middlewares.Authenticate)
-	authenticated.GET("/questions/user/:userId", services.GetQuestionByUserId)
+	authenticated.GET("/questions", services.GetQuestionByUserId)
 	authenticated.POST("/question", services.CreateQuestion)
 	authenticated.POST("/answer", services.CreateAnswer)
 	authenticated.GET("/answers/:questionId", services.GetAnswersByQuestionId)
