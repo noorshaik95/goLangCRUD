@@ -112,3 +112,23 @@ func UpdateQuestionAnswerCount(questionId int64) error {
 	_, err := config.DB.Exec(query, questionId)
 	return err
 }
+
+func (question *Question) DeleteQuestion() error {
+	question.Status = "deleted"
+	query := utils.DeleteQuestionQuery
+	_, err := config.DB.Exec(query, question.Status, question.ID)
+	return err
+}
+
+func (question *Question) UpdateQuestion() error {
+	query := utils.UpdateQuestionQuery
+	result, err := config.DB.Exec(query, question.Title, question.Body)
+	if err != nil {
+		return err
+	}
+	_, err = result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	return nil
+}

@@ -73,3 +73,74 @@ func CreateQuestion(c *gin.Context) {
 		"question": question,
 	})
 }
+
+func DeleteQuestion(c *gin.Context) {
+	var question models.Question
+	questionId := c.Param("questionId")
+	var err error
+	question.ID, err = strconv.ParseInt(questionId, 10, 64)
+	if err != nil {
+		logger.Error("Error Parsing the questionId from Context", err)
+		c.JSON(400, gin.H{"error": "Invalid questionId"})
+		return
+	}
+	err = question.GetQuestionById()
+	if err != nil {
+		logger.Error("Error fetching the question details", err)
+		c.JSON(500, gin.H{"error": "Failed to retrieve question details"})
+		return
+	}
+	err = question.DeleteQuestion()
+	if err != nil {
+		logger.Error("Error deleting the question", err)
+		c.JSON(500, gin.H{"error": "Failed to delete question"})
+		return
+	}
+	c.JSON(200, gin.H{
+		"message": "Question deleted successfully",
+	})
+}
+
+func UpdateQuestion(c *gin.Context) {
+	var question models.Question
+	questionId := c.Param("questionId")
+	var err error
+	question.ID, err = strconv.ParseInt(questionId, 10, 64)
+	if err != nil {
+		logger.Error("Error Parsing the questionId from Context", err)
+		c.JSON(400, gin.H{"error": "Invalid questionId"})
+		return
+	}
+	err = question.GetQuestionById()
+	if err != nil {
+		logger.Error("Error fetching the question details", err)
+		c.JSON(500, gin.H{"error": "Failed to retrieve question details"})
+		return
+	}
+	if err := c.ShouldBindJSON(&question); err != nil {
+		logger.Error("Error Parsing the body", err)
+		c.JSON(400, gin.H{"error": "Invalid request body"})
+		return
+	}
+	if question.Title == "" || question.Body == "" {
+		logger.Error("Missing fields", question)
+		c.JSON(400, gin.H{"error": "Missing required fields"})
+		return
+	}
+	err = question.UpdateQuestion()
+	if err != nil {
+		logger.Error("Error updating the question", err)
+		c.JSON(500, gin.H{"error": "Failed to update question"})
+		return
+	}
+	err = question.GetQuestionById()
+	if err != nil {
+		logger.Error("Question Updated but failed to retrieve", err)
+		c.JSON(500, gin.H{"error": "Question Updated but failed to retrieve"})
+		return
+	}
+	c.JSON(200, gin.H{
+		"message":  "Question updated successfully",
+		"question": question,
+	})
+}

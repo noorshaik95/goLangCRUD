@@ -20,6 +20,8 @@ func RegisterRoutes(g *gin.Engine) {
 	authenticated.GET("/questions", services.GetQuestionByUserId)
 	authenticated.POST("/question", services.CreateQuestion)
 	authenticated.GET("/question/:questionId", services.GetQuestionById)
+	authenticated.DELETE("/question/:questionId", services.DeleteQuestion)
+	authenticated.PATCH("/question/:questionId", services.UpdateQuestion)
 	authenticated.POST("/answer", services.CreateAnswer)
 	authenticated.GET("/answers/:questionId", services.GetAnswersByQuestionId)
 	logger.Info("Routes created successfully")

@@ -108,7 +108,7 @@ var UpdateAnswerQuery = `UPDATE answers
 						SET body = ?, updated_at = CURRENT_TIMESTAMP
 						WHERE id = ?`
 
-var DeleteQuestionQuery = `DELETE FROM questions WHERE id = ?`
+var DeleteQuestionQuery = `UPDATE questions SET status = ? WHERE id = ?`
 
 var DeleteAnswerQuery = `DELETE FROM answers WHERE id = ?`
 
